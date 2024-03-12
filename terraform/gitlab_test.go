@@ -70,12 +70,12 @@ func createMockServer(t *testing.T) *httptest.Server {
 	}))
 }
 
-func generateMockConfig() *config.Config{
-		// Create a mock config
-		return &config.Config{
-			Groups: []string{"group-id"},
-			Token:  "your-private-token",
-		}
+func generateMockConfig() *config.Config {
+	// Create a mock config
+	return &config.Config{
+		Groups: []string{"group-id"},
+		Token:  "your-private-token",
+	}
 }
 
 func TestCreateGitlabUrl(t *testing.T) {
@@ -100,4 +100,56 @@ func TestCreateGitlabUrl(t *testing.T) {
 	})
 }
 
+func Test_clearOldVersions(t *testing.T) {
+	tests := []struct {
+		name    string
+		modules []*TerraformModule
+		want    []*TerraformModule
+		wantErr bool
+	}{
+		{
+			name: "Normal test",
+			modules: []*TerraformModule{
+				{
+					Name:          "ecs-application/aws",
+					LatestVersion: "0.0.1",
+				},
+				{
+					Name:          "tgw-module/aws",
+					LatestVersion: "0.0.2",
+				},
+				{
+					Name:          "tgw-module/aws",
+					LatestVersion: "0.3.1",
+				},
+				{
+					Name:          "tgw-module/aws",
+					LatestVersion: "1.0.1",
+				},
+			},
+			want: []*TerraformModule{
+				{
+					Name:          "ecs-application/aws",
+					LatestVersion: "0.0.1",
+				},
+				{
+					Name:          "tgw-module/aws",
+					LatestVersion: "1.0.1",
+				},
+			},
+		},
+	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := clearOldVersions(tt.modules)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("clearOldVersions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("clearOldVersions() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

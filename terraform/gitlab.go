@@ -2,12 +2,12 @@ package terraform
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
-	"errors"
 
 	"github.com/Masterminds/semver"
 	config "github.com/volkovartem/joven/config"
@@ -75,7 +75,7 @@ func makeGiLabModulesRequest(c *config.Config, url string) (modulesResp *[]Respo
 	return &responses, totalPages, nil
 }
 
-func gitlabModulesRequest(c *config.Config) (*[]Response, error) {
+func downloadModulesMetadata(c *config.Config) (*[]Response, error) {
 	url, err := createGitLabUrl(c, "1")
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func gitlabModulesRequest(c *config.Config) (*[]Response, error) {
 
 func GetModulesFromGitlab(c *config.Config) ([]*TerraformModule, error) {
 	log.Printf("Getting modules from GitLab")
-	responses, err := gitlabModulesRequest(c)
+	responses, err := downloadModulesMetadata(c)
 	if err != nil {
 		log.Printf("Error getting modules from GitLab: %v", err)
 
@@ -118,7 +118,10 @@ func GetModulesFromGitlab(c *config.Config) ([]*TerraformModule, error) {
 		module := NewTerraformModule(response.Name, "", response.Version)
 		modules = append(modules, module)
 	}
-	clearOldVersions(modules)
+	_, err = clearOldVersions(modules)
+	if err != nil {
+		log.Printf("Unable to clean modules: %v", err)
+	}
 	return modules, nil
 }
 
