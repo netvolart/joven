@@ -7,10 +7,13 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"errors"
 
 	"github.com/Masterminds/semver"
 	config "github.com/volkovartem/joven/config"
 )
+
+var ErrorPageNumberEmpty = errors.New("Page can't be empty")
 
 type TerraformModule struct {
 	Name          string
@@ -32,6 +35,9 @@ func NewTerraformModule(name string, version string, latestVersion string) *Terr
 }
 
 func createGitLabUrl(c *config.Config, page string) (string, error) {
+	if page == "" {
+		return "", ErrorPageNumberEmpty
+	}
 	baseURL, err := url.Parse("https://gitlab.com/api/v4/groups/")
 	if err != nil {
 		return "", err
@@ -43,10 +49,10 @@ func createGitLabUrl(c *config.Config, page string) (string, error) {
 	return baseURL.ResolveReference(pathURL).String(), nil
 }
 
-func makeGiLabModulesRequest(c *config.Config, url string) (*http.Response, error) {
+func makeGiLabModulesRequest(c *config.Config, url string) (modulesResp *[]Response, totalCount int, err error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Add headers to the request
 	req.Header.Add("PRIVATE-TOKEN", c.Token)
@@ -54,10 +60,19 @@ func makeGiLabModulesRequest(c *config.Config, url string) (*http.Response, erro
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-
-	return resp, nil
+	defer resp.Body.Close()
+	var responses []Response
+	err = json.NewDecoder(resp.Body).Decode(&responses)
+	if err != nil {
+		return nil, 0, err
+	}
+	totalPages, err := strconv.Atoi(resp.Header.Get("X-Total-Pages"))
+	if err != nil {
+		return nil, 0, err
+	}
+	return &responses, totalPages, nil
 }
 
 func gitlabModulesRequest(c *config.Config) (*[]Response, error) {
@@ -65,37 +80,26 @@ func gitlabModulesRequest(c *config.Config) (*[]Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := makeGiLabModulesRequest(c, url)
+	responses, totalPages, err := makeGiLabModulesRequest(c, url)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+
 	var fullResponses []Response
-	var responses []Response
-	err = json.NewDecoder(resp.Body).Decode(&responses)
 
-	fullResponses = append(fullResponses, responses...)
+	fullResponses = append(fullResponses, *responses...)
 
-	totalPages, err := strconv.Atoi(resp.Header.Get("X-Total-Pages"))
-	if err != nil {
-		return nil, err
-	}
 	fmt.Printf("Total pages: %v\n", totalPages)
 	for i := 2; i <= totalPages; i++ {
 		url, err := createGitLabUrl(c, strconv.Itoa(i))
 		if err != nil {
 			return nil, err
 		}
-		resp, err := makeGiLabModulesRequest(c, url)
+		responses, _, err := makeGiLabModulesRequest(c, url)
 		if err != nil {
 			return nil, err
 		}
-		err = json.NewDecoder(resp.Body).Decode(&responses)
-		defer resp.Body.Close()
-		if err != nil {
-			return nil, err
-		}
-		fullResponses = append(fullResponses, responses...)
+		fullResponses = append(fullResponses, *responses...)
 	}
 
 	return &fullResponses, nil
