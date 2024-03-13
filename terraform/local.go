@@ -2,15 +2,12 @@ package terraform
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 )
 
 type LocalModule struct {
-	// Key     string `json:"Key"`
 	Source  string `json:"Source"`
 	Version string `json:"Version"`
-	// Dir     string `json:"Dir"`
 }
 
 type LocalModules struct {
@@ -27,8 +24,11 @@ func GetLocalModules() (*LocalModules, error) {
 	if err != nil {
 		return nil, err
 	}
+	var cleanLocalModules LocalModules 
 	for _, module := range localModules.Modules {
-		fmt.Printf("%v: %v\n", module.Source, module.Version)
+		if module.Source != "" {
+			cleanLocalModules.Modules = append(cleanLocalModules.Modules, module)
+		}
 	}
 	return &localModules, nil
 }

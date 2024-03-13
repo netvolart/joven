@@ -25,10 +25,22 @@ func TestMakeGiLabModulesRequest(t *testing.T) {
 		{
 			Name:    "ecs-application/aws",
 			Version: "0.0.1",
+
+			Links: struct {
+				WebPath string `json:"web_path"`
+			}{
+				WebPath: "/mygroup/terraformmodules/ModuleBootstrap/-/infrastructure_registry/234245",
+			},
 		},
 		{
 			Name:    "tgw-module/aws",
 			Version: "0.0.1",
+
+			Links: struct {
+				WebPath string `json:"web_path"`
+			}{
+				WebPath: "/mygroup/terraformmodules/ModuleBootstrap/-/infrastructure_registry/353555",
+			},
 		},
 	}
 
@@ -55,11 +67,19 @@ func createMockServer(t *testing.T) *httptest.Server {
 		data := `[
 			{
 				"name": "ecs-application/aws",
-				"version": "0.0.1"
+				"version": "0.0.1",
+				"_links": {
+					"web_path": "/mygroup/terraformmodules/ModuleBootstrap/-/infrastructure_registry/234245",
+					"delete_api_path": "https://gitlab.com/api/v4/projects/3423266/packages/234245"
+				  }
 			},
 			{
 				"name": "tgw-module/aws",
-				"version": "0.0.1"
+				"version": "0.0.1",
+				"_links": {
+					"web_path": "/mygroup/terraformmodules/ModuleBootstrap/-/infrastructure_registry/353555",
+					"delete_api_path": "https://gitlab.com/api/v4/projects/3423266/packages/4353553"
+				  }
 			}
 		
 		]`
