@@ -2,20 +2,17 @@ package terraform
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 )
+
 type LocalModule struct {
-    // Key     string `json:"Key"`
-    Source  string `json:"Source"`
-    Version string `json:"Version"`
-    // Dir     string `json:"Dir"`
+	Source  string `json:"Source"`
+	Version string `json:"Version"`
 }
 
 type LocalModules struct {
-    Modules []LocalModule `json:"Modules"`
+	Modules []LocalModule `json:"Modules"`
 }
-
 
 func GetLocalModules() (*LocalModules, error) {
 	configData, err := os.ReadFile(".terraform/modules/modules.json")
@@ -27,8 +24,11 @@ func GetLocalModules() (*LocalModules, error) {
 	if err != nil {
 		return nil, err
 	}
+	var cleanLocalModules LocalModules 
 	for _, module := range localModules.Modules {
-		fmt.Printf("%v: %v\n", module.Source, module.Version)
+		if module.Source != "" {
+			cleanLocalModules.Modules = append(cleanLocalModules.Modules, module)
+		}
 	}
 	return &localModules, nil
 }

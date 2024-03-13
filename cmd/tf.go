@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/volkovartem/joven/config"
@@ -26,32 +27,29 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Printf("%v\n", conf)
 		modules, err := terraform.GetModulesFromGitlab(conf)
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Printf("%v\n", len(modules))
+
 		localModules, err := terraform.GetLocalModules()
 		if err != nil {
 			fmt.Println(err)
 		}
 		mergedModules := terraform.MergeModules(modules, *localModules)
-		fmt.Printf("%v\n", mergedModules)
+		
+		withMarkedOutdated, err := terraform.FindOutdated(mergedModules)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+
+
+		terraform.Print(os.Stdout, withMarkedOutdated)
 
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(tfCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// tfCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// tfCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -1,10 +1,10 @@
 package terraform
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	config "github.com/volkovartem/joven/config"
@@ -13,27 +13,46 @@ import (
 func TestMakeGiLabModulesRequest(t *testing.T) {
 	server := createMockServer(t)
 	defer server.Close()
-
-	// Create a mock config
-	config := &config.Config{
-		Groups: []string{"group-name"},
-		Token:  "your-private-token",
-	}
+	config := generateMockConfig()
 	// Make the request to the mock server
-	resp, err := makeGiLabModulesRequest(config, server.URL)
+	responses, _, err := makeGiLabModulesRequest(config, server.URL)
+
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
+	expected := &[]Response{
+
+		{
+			Name:    "ecs-application/aws",
+			Version: "0.0.1",
+
+			Links: struct {
+				WebPath string `json:"web_path"`
+			}{
+				WebPath: "/mygroup/terraformmodules/ModuleBootstrap/-/infrastructure_registry/234245",
+			},
+		},
+		{
+			Name:    "tgw-module/aws",
+			Version: "0.0.1",
+
+			Links: struct {
+				WebPath string `json:"web_path"`
+			}{
+				WebPath: "/mygroup/terraformmodules/ModuleBootstrap/-/infrastructure_registry/353555",
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(responses, expected) {
+		t.Errorf("Expected %v, got %v", expected, responses)
+	}
 	fmt.Println(server.URL)
 
-	// Verify the response status code
-	expectedStatusCode := http.StatusOK
-	if resp.StatusCode != expectedStatusCode {
-		t.Errorf("Expected status code %d, got %d", expectedStatusCode, resp.StatusCode)
-	}
 }
 
 func createMockServer(t *testing.T) *httptest.Server {
+	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify the request method and URL
 		if r.Method != "GET" {
@@ -44,24 +63,113 @@ func createMockServer(t *testing.T) *httptest.Server {
 		if r.Header.Get("PRIVATE-TOKEN") != expectedToken {
 			t.Errorf("Expected PRIVATE-TOKEN header %s, got %s", expectedToken, r.Header.Get("PRIVATE-TOKEN"))
 		}
-		
+
 		data := `[
 			{
 				"name": "ecs-application/aws",
-				"version": "0.0.1"
+				"version": "0.0.1",
+				"_links": {
+					"web_path": "/mygroup/terraformmodules/ModuleBootstrap/-/infrastructure_registry/234245",
+					"delete_api_path": "https://gitlab.com/api/v4/projects/3423266/packages/234245"
+				  }
 			},
 			{
 				"name": "tgw-module/aws",
-				"version": "0.0.1"
+				"version": "0.0.1",
+				"_links": {
+					"web_path": "/mygroup/terraformmodules/ModuleBootstrap/-/infrastructure_registry/353555",
+					"delete_api_path": "https://gitlab.com/api/v4/projects/3423266/packages/4353553"
+				  }
 			}
 		
 		]`
-		err := json.NewEncoder(w).Encode(data)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-Total-Pages", "3")
 		w.WriteHeader(http.StatusOK)
-
+		fmt.Fprintln(w, data)
 	}))
+}
+
+func generateMockConfig() *config.Config {
+	// Create a mock config
+	return &config.Config{
+		Groups: []string{"group-id"},
+		Token:  "your-private-token",
+	}
+}
+
+func TestCreateGitlabUrl(t *testing.T) {
+	t.Run("Test First page", func(t *testing.T) {
+		config := generateMockConfig()
+		url, err := createGitLabUrl(config, "1")
+		if err != nil {
+			t.Errorf("Unable to generate URL %s", err)
+		}
+		expected := "https://gitlab.com/api/v4/groups/group-id/packages?package_type=terraform_module&pagination=keyset&page=1&per_page=100&sort=asc"
+		if url != expected {
+			t.Errorf("got %s want %s given", url, expected)
+		}
+	})
+	t.Run("Test Empty page", func(t *testing.T) {
+		config := generateMockConfig()
+		_, err := createGitLabUrl(config, "")
+
+		if err != ErrorPageNumberEmpty {
+			t.Errorf("got %s want %s given", ErrorPageNumberEmpty, err)
+		}
+	})
+}
+
+func Test_clearOldVersions(t *testing.T) {
+	tests := []struct {
+		name    string
+		modules []*TerraformModule
+		want    []*TerraformModule
+		wantErr bool
+	}{
+		{
+			name: "Normal test",
+			modules: []*TerraformModule{
+				{
+					Name:          "ecs-application/aws",
+					LatestVersion: "0.0.1",
+				},
+				{
+					Name:          "tgw-module/aws",
+					LatestVersion: "0.0.2",
+				},
+				{
+					Name:          "tgw-module/aws",
+					LatestVersion: "0.3.1",
+				},
+				{
+					Name:          "tgw-module/aws",
+					LatestVersion: "1.0.1",
+				},
+			},
+			want: []*TerraformModule{
+				{
+					Name:          "ecs-application/aws",
+					LatestVersion: "0.0.1",
+				},
+				{
+					Name:          "tgw-module/aws",
+					LatestVersion: "1.0.1",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := clearOldVersions(tt.modules)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("clearOldVersions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("clearOldVersions() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

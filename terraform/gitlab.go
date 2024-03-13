@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,26 +13,21 @@ import (
 	config "github.com/volkovartem/joven/config"
 )
 
-type TerraformModule struct {
-	Name          string
-	LocalVersion  string
-	LatestVersion string
-}
+var ErrorPageNumberEmpty = errors.New("Page can't be empty")
 
 type Response struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
+	Links   struct {
+		WebPath string `json:"web_path"`
+	} `json:"_links"`
 	// Add other fields as needed based on the JSON response
 }
 
-func NewTerraformModule(name string, version string, latestVersion string) *TerraformModule {
-	return &TerraformModule{
-		Name:          name,
-		LocalVersion:  version,
-		LatestVersion: latestVersion}
-}
-
 func createGitLabUrl(c *config.Config, page string) (string, error) {
+	if page == "" {
+		return "", ErrorPageNumberEmpty
+	}
 	baseURL, err := url.Parse("https://gitlab.com/api/v4/groups/")
 	if err != nil {
 		return "", err
@@ -43,10 +39,10 @@ func createGitLabUrl(c *config.Config, page string) (string, error) {
 	return baseURL.ResolveReference(pathURL).String(), nil
 }
 
-func makeGiLabModulesRequest(c *config.Config, url string) (*http.Response, error) {
+func makeGiLabModulesRequest(c *config.Config, url string) (modulesResp *[]Response, totalCount int, err error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	// Add headers to the request
 	req.Header.Add("PRIVATE-TOKEN", c.Token)
@@ -54,68 +50,73 @@ func makeGiLabModulesRequest(c *config.Config, url string) (*http.Response, erro
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-
-	return resp, nil
+	defer resp.Body.Close()
+	var responses []Response
+	err = json.NewDecoder(resp.Body).Decode(&responses)
+	if err != nil {
+		return nil, 0, err
+	}
+	totalPages, err := strconv.Atoi(resp.Header.Get("X-Total-Pages"))
+	if err != nil {
+		return nil, 0, err
+	}
+	return &responses, totalPages, nil
 }
 
-func gitlabModulesRequest(c *config.Config) (*[]Response, error) {
+func downloadModulesMetadata(c *config.Config) ([]Response, error) {
 	url, err := createGitLabUrl(c, "1")
 	if err != nil {
 		return nil, err
 	}
-	resp, err := makeGiLabModulesRequest(c, url)
+	responses, totalPages, err := makeGiLabModulesRequest(c, url)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+
 	var fullResponses []Response
-	var responses []Response
-	err = json.NewDecoder(resp.Body).Decode(&responses)
 
-	fullResponses = append(fullResponses, responses...)
+	fullResponses = append(fullResponses, *responses...)
 
-	totalPages, err := strconv.Atoi(resp.Header.Get("X-Total-Pages"))
-	if err != nil {
-		return nil, err
-	}
-	fmt.Printf("Total pages: %v\n", totalPages)
+	// fmt.Printf("Total pages: %v\n", totalPages)
 	for i := 2; i <= totalPages; i++ {
 		url, err := createGitLabUrl(c, strconv.Itoa(i))
 		if err != nil {
 			return nil, err
 		}
-		resp, err := makeGiLabModulesRequest(c, url)
+		responses, _, err := makeGiLabModulesRequest(c, url)
 		if err != nil {
 			return nil, err
 		}
-		err = json.NewDecoder(resp.Body).Decode(&responses)
-		defer resp.Body.Close()
-		if err != nil {
-			return nil, err
-		}
-		fullResponses = append(fullResponses, responses...)
+		fullResponses = append(fullResponses, *responses...)
 	}
-
-	return &fullResponses, nil
-
+	return fullResponses, nil
 }
 
 func GetModulesFromGitlab(c *config.Config) ([]*TerraformModule, error) {
-	log.Printf("Getting modules from GitLab")
-	responses, err := gitlabModulesRequest(c)
+	responses, err := downloadModulesMetadata(c)
 	if err != nil {
 		log.Printf("Error getting modules from GitLab: %v", err)
 
 	}
+	// fmt.Println(len(responses))
 	var modules []*TerraformModule
-	for _, response := range *responses {
-		module := NewTerraformModule(response.Name, "", response.Version)
+	for _, response := range responses {
+		link := "https://gitlab.com" + response.Links.WebPath
+		module := NewTerraformModule(response.Name, "", response.Version, link, false)
 		modules = append(modules, module)
 	}
-	clearOldVersions(modules)
-	return modules, nil
+	// fmt.Println(len(modules))
+	cleared, err := clearOldVersions(modules)
+	if err != nil {
+		log.Printf("Unable to clean modules: %v", err)
+	}
+	// fmt.Println(len(cleared))
+	// for _, mod :=  range cleared {
+	// 	fmt.Println(mod)
+	// }
+	return cleared, nil
 }
 
 func clearOldVersions(modules []*TerraformModule) ([]*TerraformModule, error) {
