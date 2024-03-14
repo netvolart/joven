@@ -4,119 +4,65 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	"github.com/Masterminds/semver"
-	config "github.com/volkovartem/joven/config"
+	"github.com/volkovartem/joven/config"
 )
 
 var ErrorPageNumberEmpty = errors.New("Page can't be empty")
 
-type Response struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
-	Links   struct {
-		WebPath string `json:"web_path"`
-	} `json:"_links"`
-	// Add other fields as needed based on the JSON response
-}
-
-func createGitLabUrl(c *config.Config, page string) (string, error) {
-	if page == "" {
+func createModuleGitlabUrl(c *config.Config, moduleName string) (string, error) {
+	if moduleName == "" {
 		return "", ErrorPageNumberEmpty
 	}
 	baseURL, err := url.Parse("https://gitlab.com/api/v4/groups/")
 	if err != nil {
 		return "", err
 	}
-	pathURL, err := url.Parse(fmt.Sprintf("%s/packages?package_type=terraform_module&pagination=keyset&page=%s&per_page=100&sort=asc", c.Groups[0], page))
+	pathURL, err := url.Parse(fmt.Sprintf("%s/packages?package_type=terraform_module&package_name=%s&sort=asc", c.Groups[0], moduleName))
 	if err != nil {
 		return "", err
 	}
 	return baseURL.ResolveReference(pathURL).String(), nil
+
 }
 
-func makeGiLabModulesRequest(c *config.Config, url string) (modulesResp *[]Response, totalCount int, err error) {
+func getModuleVersionsFromGitLab(c *config.Config, url string) (modules []*TerraformModule, err error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	// Add headers to the request
 	req.Header.Add("PRIVATE-TOKEN", c.Token)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	defer resp.Body.Close()
+
+	type Response struct {
+		Name    string `json:"name"`
+		Version string `json:"version"`
+		Links   struct {
+			WebPath string `json:"web_path"`
+		} `json:"_links"`
+	}
 	var responses []Response
 	err = json.NewDecoder(resp.Body).Decode(&responses)
 	if err != nil {
-		return nil, 0, err
-	}
-	totalPages, err := strconv.Atoi(resp.Header.Get("X-Total-Pages"))
-	if err != nil {
-		return nil, 0, err
-	}
-	return &responses, totalPages, nil
-}
-
-func downloadModulesMetadata(c *config.Config) ([]Response, error) {
-	url, err := createGitLabUrl(c, "1")
-	if err != nil {
-		return nil, err
-	}
-	responses, totalPages, err := makeGiLabModulesRequest(c, url)
-	if err != nil {
 		return nil, err
 	}
 
-	var fullResponses []Response
-
-	fullResponses = append(fullResponses, *responses...)
-
-	// fmt.Printf("Total pages: %v\n", totalPages)
-	for i := 2; i <= totalPages; i++ {
-		url, err := createGitLabUrl(c, strconv.Itoa(i))
-		if err != nil {
-			return nil, err
-		}
-		responses, _, err := makeGiLabModulesRequest(c, url)
-		if err != nil {
-			return nil, err
-		}
-		fullResponses = append(fullResponses, *responses...)
-	}
-	return fullResponses, nil
-}
-
-func GetModulesFromGitlab(c *config.Config) ([]*TerraformModule, error) {
-	responses, err := downloadModulesMetadata(c)
-	if err != nil {
-		log.Printf("Error getting modules from GitLab: %v", err)
-
-	}
-	// fmt.Println(len(responses))
-	var modules []*TerraformModule
 	for _, response := range responses {
 		link := "https://gitlab.com" + response.Links.WebPath
 		module := NewTerraformModule(response.Name, "", response.Version, link, false)
 		modules = append(modules, module)
 	}
-	// fmt.Println(len(modules))
-	cleared, err := clearOldVersions(modules)
-	if err != nil {
-		log.Printf("Unable to clean modules: %v", err)
-	}
-	// fmt.Println(len(cleared))
-	// for _, mod :=  range cleared {
-	// 	fmt.Println(mod)
-	// }
-	return cleared, nil
+
+	return modules, nil
 }
 
 func clearOldVersions(modules []*TerraformModule) ([]*TerraformModule, error) {

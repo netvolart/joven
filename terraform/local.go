@@ -24,7 +24,7 @@ func GetLocalModules() (*LocalModules, error) {
 	if err != nil {
 		return nil, err
 	}
-	var cleanLocalModules LocalModules 
+	var cleanLocalModules LocalModules
 	for _, module := range localModules.Modules {
 		if module.Source != "" {
 			cleanLocalModules.Modules = append(cleanLocalModules.Modules, module)

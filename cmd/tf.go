@@ -4,7 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -25,26 +25,13 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		conf, err := config.Load()
 		if err != nil {
-			fmt.Println(err)
+			log.Fatalf(err.Error())
 		}
-		modules, err := terraform.GetModulesFromGitlab(conf)
+
+		withMarkedOutdated, err := terraform.CompareGitLabModules(conf)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatalf(err.Error())
 		}
-
-		localModules, err := terraform.GetLocalModules()
-		if err != nil {
-			fmt.Println(err)
-		}
-		mergedModules := terraform.MergeModules(modules, *localModules)
-		
-		withMarkedOutdated, err := terraform.FindOutdated(mergedModules)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-
-
 		terraform.Print(os.Stdout, withMarkedOutdated)
 
 	},
