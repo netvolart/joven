@@ -22,6 +22,7 @@ type TerraformModule struct {
 	LatestVersion string
 	Link          string
 	Outdated      bool
+	Type          string
 }
 
 func NewTerraformModule(name, localVersion, latestVersion, link string, outdated bool) *TerraformModule {
