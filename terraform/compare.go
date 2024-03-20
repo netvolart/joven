@@ -2,7 +2,6 @@ package terraform
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -31,21 +30,18 @@ func findOutdated(modules []*TerraformModule) ([]*TerraformModule, error) {
 	return markedModules, nil
 }
 
-func CompareGitLabModules(c *config.Config) ([]*TerraformModule, error) {
-	configData, err := os.ReadFile(".terraform/modules/modules.json")
+func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*TerraformModule, error) {
 
-	if err != nil {
-		return nil, err
-	}
-	localModulesResult, err := GetLocalModules(configData)
+	localModulesResult, err := GetLocalModules(localModulesData)
 	if err != nil {
 		return nil, err
 	}
 	localModules := setModulesSourceType(localModulesResult)
 	var resultModules []*TerraformModule
+
 	for _, localModule := range localModules.Modules {
 		var remoteModules []*TerraformModule
-		if (localModule.Type == "gitlab") {
+		if localModule.Type == "gitlab" {
 			namesList := strings.Split(localModule.Source, "/")
 
 			nameAndVendor := fmt.Sprintf("%s/%s", namesList[len(namesList)-2], namesList[len(namesList)-1])
@@ -53,13 +49,21 @@ func CompareGitLabModules(c *config.Config) ([]*TerraformModule, error) {
 			if err != nil {
 				return nil, err
 			}
-	
+
 			remoteModules, err = getModuleVersionsFromGitLab(c, url)
 			if err != nil {
 				return nil, err
 			}
-		} else if (localModule.Type == "community") {
-			continue
+		} else if localModule.Type == "community" {
+			url, err := CreateModuleGitlabUrl(c, localModule.Source)
+			if err != nil {
+				return nil, err
+			}
+			communityModule, err := getModuleVersionsFromRegistry(url, localModule)
+			if err != nil {
+				return nil, err
+			}
+			resultModules = append(resultModules, &communityModule)
 		}
 
 		result, err := clearOldVersions(remoteModules)

@@ -25,6 +25,8 @@ type TerraformModule struct {
 	Type          string
 }
 
+
+
 func NewTerraformModule(name, localVersion, latestVersion, link string, outdated bool) *TerraformModule {
 	return &TerraformModule{
 		Name:          name,
@@ -35,7 +37,10 @@ func NewTerraformModule(name, localVersion, latestVersion, link string, outdated
 	}
 }
 
-func Print(w io.Writer, modules []*TerraformModule) {
+type TerraformModules []*TerraformModule
+
+
+func (modules TerraformModules) Print(w io.Writer) {
 	table := simpletable.New()
 
 	table.Header = &simpletable.Header{

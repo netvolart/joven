@@ -27,12 +27,16 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
+		localModulesData, err := os.ReadFile(".terraform/modules/modules.json")
 
-		withMarkedOutdated, err := terraform.CompareGitLabModules(conf)
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
-		terraform.Print(os.Stdout, withMarkedOutdated)
+		withMarkedOutdated, err := terraform.CompareGitLabModules(conf, localModulesData)
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		withMarkedOutdated.Print(os.Stdout)
 
 	},
 }

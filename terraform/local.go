@@ -11,6 +11,8 @@ type LocalModule struct {
 	Type    string
 }
 
+
+
 func setModulesSourceType(modules *LocalModules) *LocalModules {
 	var modulesWithTypes LocalModules
 	for _, m := range modules.Modules {
