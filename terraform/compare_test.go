@@ -44,34 +44,3 @@ func Test_findOutdated(t *testing.T) {
 		t.Errorf("Expected %v, got %v", expectedResult, result)
 	}
 }
-
-// func Test_getModuleVersionsFromGitLab(t *testing.T) {
-// 	server := createMockServer(t)
-// 	defer server.Close()
-// 	config := generateMockConfig(t)
-// 	// Make the request to the mock server
-// 	modules, err := getModuleVersionsFromGitLab(config, server.URL)
-
-// 	if err != nil {
-// 		t.Errorf("Unexpected error: %v", err)
-// 	}
-// 	expected := []*TerraformModule{
-// 		{
-// 			Name:          "ecs-module/aws",
-// 			LocalVersion:  "",
-// 			LatestVersion: "0.0.1",
-// 			Link:          "https://gitlab.com/mygroup/terraformmodules/ModuleECS/-/infrastructure_registry/234245",
-// 		},
-// 		{
-// 			Name:          "ecs-module/aws",
-// 			LocalVersion:  "",
-// 			LatestVersion: "0.3.0",
-// 			Link:          "https://gitlab.com/mygroup/terraformmodules/ModuleECS/-/infrastructure_registry/353555",
-// 		},
-// 	}
-
-// 	if !reflect.DeepEqual(modules, expected) {
-// 		t.Errorf("Expected %v, got %v", expected, modules)
-// 	}
-
-// }

@@ -45,7 +45,6 @@ func TestMakeGiLabModulesRequest(t *testing.T) {
 	if !reflect.DeepEqual(responses, expected) {
 		t.Errorf("Expected %v, got %v", expected, responses)
 	}
-	fmt.Println(server.URL)
 
 }
 

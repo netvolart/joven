@@ -31,11 +31,12 @@ func findOutdated(modules []*TerraformModule) ([]*TerraformModule, error) {
 }
 
 func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*TerraformModule, error) {
-
+	// parse local modules
 	localModulesResult, err := GetLocalModules(localModulesData)
 	if err != nil {
 		return nil, err
 	}
+	// set types for local modules (gitlab or community)
 	localModules := setModulesSourceType(localModulesResult)
 	var resultModules []*TerraformModule
 
@@ -54,7 +55,16 @@ func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*Terrafo
 			if err != nil {
 				return nil, err
 			}
+			result, err := clearOldVersions(remoteModules)
+
+			if err != nil {
+				return nil, err
+			}
+			mod := NewTerraformModule(result[0].Name, localModule.Version, result[0].LatestVersion, result[0].Link, false)
+			resultModules = append(resultModules, mod)
+
 		} else if localModule.Type == "community" {
+
 			url, err := CreateModuleGitlabUrl(c, localModule.Source)
 			if err != nil {
 				return nil, err
@@ -63,17 +73,10 @@ func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*Terrafo
 			if err != nil {
 				return nil, err
 			}
+			//		log.Println(communityModule)
 			resultModules = append(resultModules, &communityModule)
 		}
 
-		result, err := clearOldVersions(remoteModules)
-
-		if err != nil {
-			return nil, err
-		}
-
-		mod := NewTerraformModule(result[0].Name, localModule.Version, result[0].LatestVersion, result[0].Link, false)
-		resultModules = append(resultModules, mod)
 	}
 
 	withMarkedOutdated, err := findOutdated(resultModules)

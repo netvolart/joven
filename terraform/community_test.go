@@ -25,11 +25,10 @@ func Test_getModuleVersionFromRegistry(t *testing.T) {
 	}
 	expected := TerraformModule{
 
-			Name:         "registry.terraform.io/terraform-aws-modules/vpc/aws",
-			LocalVersion:  "5.5.0",
-			LatestVersion: "5.6.0",
-			Link:          "https://github.com/terraform-aws-modules/terraform-aws-vpc",
-
+		Name:          "registry.terraform.io/terraform-aws-modules/vpc/aws",
+		LocalVersion:  "5.5.0",
+		LatestVersion: "5.6.0",
+		Link:          "https://github.com/terraform-aws-modules/terraform-aws-vpc",
 	}
 
 	if !reflect.DeepEqual(modules, expected) {
@@ -76,7 +75,6 @@ func createRegistryMockServer(t *testing.T) *httptest.Server {
 		fmt.Fprintln(w, data)
 	}))
 }
-
 
 func TestCreateModuleCommunityUrl(t *testing.T) {
 	t.Run("Test First page", func(t *testing.T) {

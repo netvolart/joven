@@ -22,10 +22,9 @@ func getModuleVersionsFromRegistry(url string, localModule LocalModule) (module 
 	defer resp.Body.Close()
 
 	type Response struct {
-		ID string `json:"id"`
+		ID      string `json:"id"`
 		Version string `json:"version"`
-		Link string `json:"source"`
-
+		Link    string `json:"source"`
 	}
 	var response Response
 	err = json.NewDecoder(resp.Body).Decode(&response)

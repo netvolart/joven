@@ -6,18 +6,24 @@ import (
 )
 
 type LocalModule struct {
+	Key     string `json:"Key"`
 	Source  string `json:"Source"`
 	Version string `json:"Version"`
 	Type    string
+	Nested  bool
 }
 
-
+func (m *LocalModule) checkIfNested() {
+	if strings.Contains(m.Source, "//") || strings.Contains(m.Key, ".") {
+		m.Nested = true
+	}
+}
 
 func setModulesSourceType(modules *LocalModules) *LocalModules {
 	var modulesWithTypes LocalModules
 	for _, m := range modules.Modules {
 		var moduleType string
-		if strings.Contains(m.Source, "gitlab") {
+		if strings.Contains(m.Source, "gitlab.com") {
 			moduleType = "gitlab"
 		} else if strings.Contains(m.Source, "registry.terraform.io") {
 			moduleType = "community"
@@ -28,6 +34,7 @@ func setModulesSourceType(modules *LocalModules) *LocalModules {
 			Source:  m.Source,
 			Version: m.Version,
 			Type:    moduleType,
+			Nested:  m.Nested,
 		}
 		modulesWithTypes.Modules = append(modulesWithTypes.Modules, mod)
 
@@ -48,8 +55,19 @@ func GetLocalModules(data []byte) (*LocalModules, error) {
 	}
 	var cleanLocalModules LocalModules
 	for _, module := range localModules.Modules {
+		// Avoid empty module sources
 		if module.Source == "" {
 			continue
+		}
+		module.checkIfNested()
+		// Nested modules (modules in modules) are not supported
+		// To keep output readable, we skip them
+		if module.Nested {
+			continue
+		}
+		if strings.Contains(module.Source, "//") {
+			parentModuleSlice := strings.Split(module.Source, "//")
+			module.Source = parentModuleSlice[len(parentModuleSlice)-1]
 		}
 		cleanLocalModules.Modules = append(cleanLocalModules.Modules, module)
 	}
