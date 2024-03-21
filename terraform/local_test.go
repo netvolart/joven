@@ -34,7 +34,7 @@ func TestGetLocalModules(t *testing.T) {
 		]
 	}`
 
-	localModules, err := GetLocalModules([]byte(data))
+	localModules, err := getLocalModules([]byte(data))
 	if err != nil {
 		t.Errorf(err.Error())
 	}

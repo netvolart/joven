@@ -5,7 +5,24 @@ Currently we are supporting GitLab and Community Registry as a terraform modules
 
 ## Installation
 
+### MacOS via homebrew
+
+```bash
+brew tap netvolart/tap
+brew install joven
+```
+### Linux and MacOS from binary
+
 To install Joven, you can download the latest release from the [Releases](https://github.com/yourusername/joven/releases) page. Choose the binary that matches your operating system and architecture, download it, and place it in your system's PATH.
+
+For example:
+
+```sh
+wget https://github.com/netvolart/joven/releases/download/v0.0.1/joven_0.0.1_linux_amd64.tar.gz
+tar -xvzf joven_0.0.1_linux_amd64.tar.gz
+chmod +x joven
+sudo mv joven /usr/local/bin/
+```
 
 ## Configuration
 

@@ -78,8 +78,7 @@ func createRegistryMockServer(t *testing.T) *httptest.Server {
 
 func TestCreateModuleCommunityUrl(t *testing.T) {
 	t.Run("Test First page", func(t *testing.T) {
-		config := generateMockConfig(t)
-		url, err := CreateModuleGitlabUrl(config, "registry.terraform.io/terraform-aws-modules/vpc/aws")
+		url, err := createModuleCommunityUrl("registry.terraform.io/terraform-aws-modules/vpc/aws")
 		if err != nil {
 			t.Errorf("Unable to generate URL %s", err)
 		}
@@ -89,8 +88,7 @@ func TestCreateModuleCommunityUrl(t *testing.T) {
 		}
 	})
 	t.Run("Test Empty page", func(t *testing.T) {
-		config := generateMockConfig(t)
-		_, err := createModuleGitlabUrl(config, "")
+		_, err := createModuleCommunityUrl("")
 
 		if err != ErrorPageNumberEmpty {
 			t.Errorf("got %s want %s given", ErrorPageNumberEmpty, err)

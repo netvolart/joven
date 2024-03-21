@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/netvolart/joven/config"
 )
 
 func getModuleVersionsFromRegistry(url string, localModule LocalModule) (module TerraformModule, Error error) {
@@ -41,7 +39,7 @@ func getModuleVersionsFromRegistry(url string, localModule LocalModule) (module 
 
 }
 
-func CreateModuleGitlabUrl(c *config.Config, moduleName string) (string, error) {
+func createModuleCommunityUrl(moduleName string) (string, error) {
 	if moduleName == "" {
 		return "", ErrorPageNumberEmpty
 	}
