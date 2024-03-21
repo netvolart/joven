@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/alexeyco/simpletable"
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 const (
 	ColorDefault = "\x1b[39m"
-
-	ColorRed   = "\x1b[91m"
-	ColorGreen = "\x1b[32m"
-	ColorBlue  = "\x1b[94m"
-	ColorGray  = "\x1b[90m"
+	ColorRed     = "\x1b[91m"
+	ColorGreen   = "\x1b[32m"
+	ColorBlue    = "\x1b[94m"
+	ColorGray    = "\x1b[90m"
 )
 
 type TerraformModule struct {
@@ -22,6 +21,7 @@ type TerraformModule struct {
 	LatestVersion string
 	Link          string
 	Outdated      bool
+	Type          string
 }
 
 func NewTerraformModule(name, localVersion, latestVersion, link string, outdated bool) *TerraformModule {
@@ -35,33 +35,26 @@ func NewTerraformModule(name, localVersion, latestVersion, link string, outdated
 }
 
 func Print(w io.Writer, modules []*TerraformModule) {
-	table := simpletable.New()
+	t := table.NewWriter()
+	t.SetStyle(table.StyleRounded)
+	t.SetOutputMirror(w)
 
-	table.Header = &simpletable.Header{
-		Cells: []*simpletable.Cell{
-			{Align: simpletable.AlignCenter, Text: "Module"},
-			{Align: simpletable.AlignCenter, Text: "Local Version"},
-			{Align: simpletable.AlignCenter, Text: "Latest Version"},
-			{Align: simpletable.AlignCenter, Text: "Status"},
-			{Align: simpletable.AlignCenter, Text: "Link"},
-		},
-	}
-
+	t.AppendHeader(table.Row{"Module", "Local Version", "Latest Version", "Status"})
 	for _, module := range modules {
 
-		r := []*simpletable.Cell{
-
-			{Text: addColor(module.Outdated, module.Name)},
-			{Text: addColor(module.Outdated, module.LocalVersion)},
-			{Text: addColor(module.Outdated, module.LatestVersion)},
-			{Text: addColor(module.Outdated, humanReadableOutdated(module.Outdated))},
-			{Text: addColor(module.Outdated, module.Link)},
+		r := table.Row{
+			addColor(module.Outdated, module.Name),
+			addColor(module.Outdated, module.LocalVersion),
+			addColor(module.Outdated, module.LatestVersion),
+			addColor(module.Outdated, humanReadableOutdated(module.Outdated)),
 		}
+		link := table.Row{fmt.Sprintf("Latest version -> %s", addColor(module.Outdated, module.Link))}
 
-		table.Body.Cells = append(table.Body.Cells, r)
-
+		t.AppendRow(r)
+		t.AppendRow(link)
+		t.AppendSeparator()
 	}
-	table.Println()
+	t.Render()
 
 }
 

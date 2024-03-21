@@ -30,39 +30,53 @@ func findOutdated(modules []*TerraformModule) ([]*TerraformModule, error) {
 	return markedModules, nil
 }
 
-func CompareGitLabModules(c *config.Config) ([]*TerraformModule, error) {
-	localModules, err := GetLocalModules()
+func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*TerraformModule, error) {
+	// parse local modules
+	localModulesResult, err := GetLocalModules(localModulesData)
 	if err != nil {
 		return nil, err
 	}
+	// set types for local modules (gitlab or community)
+	localModules := setModulesSourceType(localModulesResult)
 	var resultModules []*TerraformModule
+
 	for _, localModule := range localModules.Modules {
-		if localModule.Source == "" {
-			continue
-		}
-		if !strings.Contains(localModule.Source, "gitlab") {
-			continue
-		}
-		namesList := strings.Split(localModule.Source, "/")
+		var remoteModules []*TerraformModule
+		if localModule.Type == "gitlab" {
+			namesList := strings.Split(localModule.Source, "/")
 
-		nameAndVendor := fmt.Sprintf("%s/%s", namesList[len(namesList)-2], namesList[len(namesList)-1])
-		url, err := createModuleGitlabUrl(c, nameAndVendor)
-		if err != nil {
-			return nil, err
+			nameAndVendor := fmt.Sprintf("%s/%s", namesList[len(namesList)-2], namesList[len(namesList)-1])
+			url, err := createModuleGitlabUrl(c, nameAndVendor)
+			if err != nil {
+				return nil, err
+			}
+
+			remoteModules, err = getModuleVersionsFromGitLab(c, url)
+			if err != nil {
+				return nil, err
+			}
+			result, err := clearOldVersions(remoteModules)
+
+			if err != nil {
+				return nil, err
+			}
+			mod := NewTerraformModule(result[0].Name, localModule.Version, result[0].LatestVersion, result[0].Link, false)
+			resultModules = append(resultModules, mod)
+
+		} else if localModule.Type == "community" {
+
+			url, err := CreateModuleGitlabUrl(c, localModule.Source)
+			if err != nil {
+				return nil, err
+			}
+			communityModule, err := getModuleVersionsFromRegistry(url, localModule)
+			if err != nil {
+				return nil, err
+			}
+			//		log.Println(communityModule)
+			resultModules = append(resultModules, &communityModule)
 		}
 
-		gitlabModulesVersions, err := getModuleVersionsFromGitLab(c, url)
-		if err != nil {
-			return nil, err
-		}
-		result, err := clearOldVersions(gitlabModulesVersions)
-
-		if err != nil {
-			return nil, err
-		}
-
-		mod := NewTerraformModule(result[0].Name, localModule.Version, result[0].LatestVersion, result[0].Link, false)
-		resultModules = append(resultModules, mod)
 	}
 
 	withMarkedOutdated, err := findOutdated(resultModules)
