@@ -4,7 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"log"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -24,7 +24,7 @@ var setCmd = &cobra.Command{
 		configData := conf.New(token, groupsList)
 		err := configData.Save()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	},
 }
@@ -32,7 +32,12 @@ var setCmd = &cobra.Command{
 func init() {
 	configCmd.AddCommand(setCmd)
 	setCmd.Flags().StringP("token", "t", "", "Gitlab personal access token")
-	setCmd.MarkFlagRequired("token")
+	if err := setCmd.MarkFlagRequired("token"); err != nil {
+		log.Println(err)
+	}
+
 	setCmd.Flags().StringP("groups", "g", "", "Comma separated list of GitLab groups with Terraform modules and CDK libs")
-	setCmd.MarkFlagRequired("groups")
+	if err := setCmd.MarkFlagRequired("groups"); err != nil {
+		log.Println(err)
+	}
 }
