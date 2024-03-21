@@ -1,0 +1,23 @@
+name: lint
+permissions:
+  contents: read
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main 
+
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: '.go-version'
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
