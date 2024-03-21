@@ -7,9 +7,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/netvolart/joven/config"
+	"github.com/netvolart/joven/terraform"
 	"github.com/spf13/cobra"
-	"github.com/volkovartem/joven/config"
-	"github.com/volkovartem/joven/terraform"
 )
 
 // tfCmd represents the tf command
@@ -22,7 +22,7 @@ var tfCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		conf, err := config.Load()
-		
+
 		if err != nil {
 			log.Fatalf(err.Error())
 		}

@@ -1,4 +1,4 @@
-module github.com/volkovartem/joven
+module github.com/netvolart/joven
 
 go 1.22.0
 

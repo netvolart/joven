@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/volkovartem/joven/config"
+	"github.com/netvolart/joven/config"
 )
 
 func getModuleVersionsFromRegistry(url string, localModule LocalModule) (module TerraformModule, Error error) {

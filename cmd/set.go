@@ -7,8 +7,8 @@ import (
 	"log"
 	"strings"
 
+	conf "github.com/netvolart/joven/config"
 	"github.com/spf13/cobra"
-	conf "github.com/volkovartem/joven/config"
 )
 
 var setCmd = &cobra.Command{

@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	config "github.com/volkovartem/joven/config"
+	config "github.com/netvolart/joven/config"
 )
 
 type Response struct {

@@ -3,7 +3,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
 package main
 
-import "github.com/volkovartem/joven/cmd"
+import "github.com/netvolart/joven/cmd"
 
 func main() {
 	cmd.Execute()

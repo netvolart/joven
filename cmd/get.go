@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	conf "github.com/netvolart/joven/config"
 	"github.com/spf13/cobra"
-	conf "github.com/volkovartem/joven/config"
 )
 
 // getCmd represents the get command

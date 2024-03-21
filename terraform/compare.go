@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
-	"github.com/volkovartem/joven/config"
+	"github.com/netvolart/joven/config"
 )
 
 func findOutdated(modules []*TerraformModule) ([]*TerraformModule, error) {

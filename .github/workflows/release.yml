@@ -1,46 +1,35 @@
-name: Build and Release
+name: goreleaser
 
 on:
   push:
     tags:
-      - 'v*'
+      - "*"
+
+permissions:
+  contents: write
 
 jobs:
-  build:
-    name: Build
+  goreleaser:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: [1.22.x]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - os: macos-latest
-            arch: arm64
-            filename: joven-mac-m1
-          - os: ubuntu-latest
-            arch: amd64
-            filename: joven-linux
-          - os: windows-latest
-            arch: amd64
-            filename: joven-windows.exe
-
     steps:
-      - name: Check out code
+      - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go-version }}
+          fetch-depth: 0
 
-      - name: Test
-        run: go test ./...
+      - name: Fetch all tags
+        run: git fetch --force --tags
 
-      - name: Build
-        run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ${{ matrix.filename }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
+      - run: sed -En 's/^go (.*)$/GO_VERSION=\1/p' go.mod >> $GITHUB_ENV
+      - uses: actions/setup-go@v2
         with:
-          name: ${{ matrix.filename }}
-          path: ./${{ matrix.filename }}
+          go-version: "${{ env.GO_VERSION }}"
+          
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          distribution: goreleaser
+          version: ${{ env.GITHUB_REF_NAME }}
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}

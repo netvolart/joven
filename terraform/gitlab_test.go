@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	config "github.com/volkovartem/joven/config"
+	config "github.com/netvolart/joven/config"
 )
 
 // Create a mock config
