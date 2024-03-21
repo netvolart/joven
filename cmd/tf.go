@@ -22,6 +22,7 @@ var tfCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		conf, err := config.Load()
+		
 		if err != nil {
 			log.Fatalf(err.Error())
 		}

@@ -1,0 +1,46 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.22.x]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: macos-latest
+            arch: arm64
+            filename: joven-mac-m1
+          - os: ubuntu-latest
+            arch: amd64
+            filename: joven-linux
+          - os: windows-latest
+            arch: amd64
+            filename: joven-windows.exe
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build
+        run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ${{ matrix.filename }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.filename }}
+          path: ./${{ matrix.filename }}
