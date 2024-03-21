@@ -3,7 +3,6 @@ package terraform
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -58,63 +57,4 @@ func makeGiLabModulesRequest(c *config.Config, url string) (modulesResp *[]Respo
 		return nil, 0, err
 	}
 	return &responses, totalPages, nil
-}
-
-func downloadModulesMetadata(c *config.Config) ([]Response, error) {
-	url, err := createGitLabUrl(c, "1")
-	if err != nil {
-		return nil, err
-	}
-	responses, totalPages, err := makeGiLabModulesRequest(c, url)
-	if err != nil {
-		return nil, err
-	}
-
-	var fullResponses []Response
-
-	fullResponses = append(fullResponses, *responses...)
-	resultChannel := make(chan *[]Response)
-	for i := 2; i <= totalPages; i++ {
-
-		url, err := createGitLabUrl(c, strconv.Itoa(i))
-		if err != nil {
-			return nil, err
-		}
-		go func(c *config.Config, url string) {
-			responses, _, err := makeGiLabModulesRequest(c, url)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			resultChannel <- responses
-		}(c, url)
-
-		fullResponses = append(fullResponses, *responses...)
-	}
-	for i := 2; i <= totalPages; i++ {
-		r := <-resultChannel
-		fullResponses = append(fullResponses, *r...)
-	}
-	return fullResponses, nil
-}
-
-func getModulesFromGitlab(c *config.Config) ([]*TerraformModule, error) {
-	responses, err := downloadModulesMetadata(c)
-	if err != nil {
-		log.Printf("Error getting modules from GitLab: %v", err)
-
-	}
-	var modules []*TerraformModule
-	for _, response := range responses {
-		link := "https://gitlab.com" + response.Links.WebPath
-		module := NewTerraformModule(response.Name, "", response.Version, link, false)
-		modules = append(modules, module)
-	}
-
-	cleared, err := clearOldVersions(modules)
-	if err != nil {
-		log.Printf("Unable to clean modules: %v", err)
-	}
-
-	return cleared, nil
 }
