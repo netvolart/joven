@@ -47,7 +47,7 @@ type LocalModules struct {
 	Modules []LocalModule `json:"Modules"`
 }
 
-func GetLocalModules(data []byte) (*LocalModules, error) {
+func getLocalModules(data []byte) (*LocalModules, error) {
 	var localModules LocalModules
 	err := json.Unmarshal(data, &localModules)
 	if err != nil {

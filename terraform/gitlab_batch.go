@@ -98,7 +98,7 @@ func downloadModulesMetadata(c *config.Config) ([]Response, error) {
 	return fullResponses, nil
 }
 
-func GetModulesFromGitlab(c *config.Config) ([]*TerraformModule, error) {
+func getModulesFromGitlab(c *config.Config) ([]*TerraformModule, error) {
 	responses, err := downloadModulesMetadata(c)
 	if err != nil {
 		log.Printf("Error getting modules from GitLab: %v", err)
