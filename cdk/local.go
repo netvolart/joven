@@ -1,7 +1,6 @@
 package cdk
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -31,23 +30,16 @@ func detectLanguage() (lang string, err error) {
 				return "", err
 			}
 			if matched {
-				fmt.Println(patterns[pattern])
 				return patterns[pattern], nil
 			}
 		}
 	}
-
-	// if matched {
-	// 	fmt.Println(patterns[pattern])
-	// 	lang = patterns[pattern]
-
-	// }
-	// for _, pattern := range patterns {
-
-	// 	if err != nil {
-	// 		fmt.Printf("walk error [%v]\n", err)
-	// 	}
-	// }
-	// return lang, nil
 	return "", nil
 }
+
+// open project.json file and unmarshal to struct
+
+// check if lib is in tree.json file
+
+// if it is in tree.json file, check the latest version with npm
+
