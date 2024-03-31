@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/netvolart/joven/iac"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 func getModuleVersionsFromRegistry(url string, localModule LocalModule) (module iac.Package, Error error) {

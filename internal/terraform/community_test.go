@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/netvolart/joven/iac"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 func Test_getModuleVersionFromRegistry(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/netvolart/joven/helper"
+	"github.com/netvolart/joven/internal/helper"
 )
 
 func Print(w io.Writer, packages []CDKPackage) {

@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
-	"github.com/netvolart/joven/config"
-	"github.com/netvolart/joven/iac"
+	"github.com/netvolart/joven/internal/config"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 func findOutdated(modules []*iac.Package) ([]*iac.Package, error) {

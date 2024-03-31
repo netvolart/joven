@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	config "github.com/netvolart/joven/config"
-	"github.com/netvolart/joven/iac"
+	config "github.com/netvolart/joven/internal/config"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 // Create a mock config

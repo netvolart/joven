@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/netvolart/joven/cdk"
-	"github.com/netvolart/joven/config"
+	"github.com/netvolart/joven/internal/cdk"
+	"github.com/netvolart/joven/internal/config"
 	"github.com/spf13/cobra"
 )
 

@@ -5,8 +5,8 @@ import (
 	"io"
 
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/netvolart/joven/helper"
-	"github.com/netvolart/joven/iac"
+	"github.com/netvolart/joven/internal/helper"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 func Print(w io.Writer, modules []*iac.Package) {

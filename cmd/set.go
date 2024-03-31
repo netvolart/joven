@@ -7,7 +7,7 @@ import (
 	"log"
 	"strings"
 
-	conf "github.com/netvolart/joven/config"
+	conf "github.com/netvolart/joven/internal/config"
 	"github.com/spf13/cobra"
 )
 

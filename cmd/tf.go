@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/netvolart/joven/config"
-	"github.com/netvolart/joven/terraform"
+	"github.com/netvolart/joven/internal/config"
+	"github.com/netvolart/joven/internal/terraform"
 	"github.com/spf13/cobra"
 )
 

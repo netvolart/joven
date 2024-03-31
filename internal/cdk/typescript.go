@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
-	"github.com/netvolart/joven/iac"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 type CDKPackage iac.Package

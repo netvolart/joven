@@ -8,8 +8,8 @@ import (
 	"net/url"
 
 	"github.com/Masterminds/semver"
-	"github.com/netvolart/joven/config"
-	"github.com/netvolart/joven/iac"
+	"github.com/netvolart/joven/internal/config"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 var ErrorPageNumberEmpty = errors.New("Page can't be empty")

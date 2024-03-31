@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/netvolart/joven/iac"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 func Test_findOutdated(t *testing.T) {
