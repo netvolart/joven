@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"log"
+	"os"
 
 	"github.com/netvolart/joven/cdk"
 	"github.com/netvolart/joven/config"
@@ -25,13 +26,11 @@ var cdkCmd = &cobra.Command{
 			log.Fatalf(err.Error())
 		}
 
-		cdk.CompareCDKConstructs()
-
-		// withMarkedOutdated, err := terraform.CompareGitLabModules(conf, localModulesData)
-		// if err != nil {
-		// 	log.Fatalf(err.Error())
-		// }
-		// terraform.Print(os.Stdout, withMarkedOutdated)
+		withMarkedOutdated, err := cdk.CompareCDKConstructs()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		cdk.Print(os.Stdout, withMarkedOutdated)
 
 	},
 }

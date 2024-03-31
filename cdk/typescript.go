@@ -117,28 +117,6 @@ func removeDuplicates(packages []CDKPackage) []CDKPackage {
 	return list
 }
 
-// https://gitlab.com/temabit/sharedservice/cdk-construct-dev-dependencies/-/packages/21688340
-func getLatestVersionFromNpm(packageName string) string {
-	cmd := exec.Command("npm", "view", packageName, "version", "--json")
-	output, err := cmd.Output()
-	if err != nil {
-		log.Fatalf("Error executing command: %s", err)
-
-	}
-
-	var result interface{}
-	err = json.Unmarshal(output, &result)
-	if err != nil {
-		log.Fatalf("Error parsing JSON: %s", err)
-
-	}
-	_, err = semver.NewVersion(result.(string))
-	if err != nil {
-		log.Fatalf("Version is not in Semver format  %s", err)
-	}
-	return result.(string)
-
-}
 
 func (p *CDKPackage) getPackageNpmInfo() {
 	cmd := exec.Command("npm", "view", p.Name, "--json")

@@ -1,12 +1,12 @@
 package cdk
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"os"
 )
 
-func CompareCDKConstructs() {
+func CompareCDKConstructs() ([]CDKPackage, error) {
 	lang, err := detectLanguage()
 	if err != nil {
 		log.Fatalf("error detecting language: %v", err)
@@ -15,7 +15,7 @@ func CompareCDKConstructs() {
 	case "typescript":
 		localCdkTree, err := os.ReadFile("cdk.out/tree.json")
 		if err != nil {
-			log.Fatalf("error reading tree JSON: %v", err)
+			return nil, err
 		}
 		constructs := getNodeCDKConstructs(localCdkTree)
 		packages := formNodeCDKPackages(constructs)
@@ -26,6 +26,13 @@ func CompareCDKConstructs() {
 			pack.setOutdated()
 			packagesWithoutDuplicates[k] = pack
 		}
-		fmt.Println(packagesWithoutDuplicates)
+		return packagesWithoutDuplicates, nil
+	case "dotnet":
+		log.Fatal("dotnet is not supported yet")
+	default:
+		return nil, errors.New("language is not supported")
 	}
+	return nil, errors.New("language is not supported")
+
 }
+

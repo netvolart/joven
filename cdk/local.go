@@ -37,9 +37,3 @@ func detectLanguage() (lang string, err error) {
 	return "", nil
 }
 
-// open project.json file and unmarshal to struct
-
-// check if lib is in tree.json file
-
-// if it is in tree.json file, check the latest version with npm
-

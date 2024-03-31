@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/netvolart/joven/config"
-	"github.com/netvolart/joven/iac"
 	"github.com/netvolart/joven/terraform"
 	"github.com/spf13/cobra"
 )
@@ -36,7 +35,7 @@ var tfCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
-		iac.Print(os.Stdout, withMarkedOutdated)
+		terraform.Print(os.Stdout, withMarkedOutdated)
 
 	},
 }
