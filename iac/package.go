@@ -1,4 +1,4 @@
-package terraform
+package iac
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ const (
 	ColorGreen   = "\x1b[32m"
 )
 
-type TerraformModule struct {
+type Package struct {
 	Name          string
 	LocalVersion  string
 	LatestVersion string
@@ -22,8 +22,8 @@ type TerraformModule struct {
 	Type          string
 }
 
-func NewTerraformModule(name, localVersion, latestVersion, link string, outdated bool) *TerraformModule {
-	return &TerraformModule{
+func NewPackage(name, localVersion, latestVersion, link string, outdated bool) *Package {
+	return &Package{
 		Name:          name,
 		LocalVersion:  localVersion,
 		LatestVersion: latestVersion,
@@ -32,7 +32,7 @@ func NewTerraformModule(name, localVersion, latestVersion, link string, outdated
 	}
 }
 
-func Print(w io.Writer, modules []*TerraformModule) {
+func Print(w io.Writer, modules []*Package) {
 	t := table.NewWriter()
 	t.SetStyle(table.StyleRounded)
 	t.SetOutputMirror(w)

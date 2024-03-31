@@ -7,22 +7,16 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
+	"github.com/netvolart/joven/iac"
 )
+
+type CDKPackage iac.Package
 
 type PackageJson struct {
 	Name            string            `json:"name"`
 	Version         string            `json:"version"`
 	Dependencies    map[string]string `json:"dependencies"`
 	DevDependencies map[string]string `json:"devDependencies"`
-}
-
-type CDKPackage struct {
-	Name          string
-	Version       string
-	LatestVersion string
-	Link          string
-	Outdated      bool
-	Type          string
 }
 
 func parsePackageJson(data []byte) []CDKPackage {
@@ -34,10 +28,10 @@ func parsePackageJson(data []byte) []CDKPackage {
 		log.Fatalf("error unmarshaling package JSON: %v", err)
 	}
 	for key := range file.DevDependencies {
-		packages = append(packages, CDKPackage{Name: key, Version: file.DevDependencies[key]})
+		packages = append(packages, CDKPackage{Name: key, LocalVersion: file.DevDependencies[key]})
 	}
 	for key := range file.Dependencies {
-		packages = append(packages, CDKPackage{Name: key, Version: file.Dependencies[key]})
+		packages = append(packages, CDKPackage{Name: key, LocalVersion: file.Dependencies[key]})
 	}
 	return packages
 }
@@ -95,8 +89,8 @@ func formNodeCDKPackages(constructs []ConstructInfo) []CDKPackage {
 	packages := []CDKPackage{}
 	for _, construct := range constructs {
 		packages = append(packages, CDKPackage{
-			Name:    clearFqn(construct.Fqn),
-			Version: construct.Version,
+			Name:         clearFqn(construct.Fqn),
+			LocalVersion: construct.Version,
 		})
 	}
 	return packages
@@ -128,19 +122,19 @@ func getLatestVersionFromNpm(packageName string) string {
 	cmd := exec.Command("npm", "view", packageName, "version", "--json")
 	output, err := cmd.Output()
 	if err != nil {
-		log.Fatalf("Error executing command:", err)
+		log.Fatalf("Error executing command: %s", err)
 
 	}
 
 	var result interface{}
 	err = json.Unmarshal(output, &result)
 	if err != nil {
-		log.Fatalf("Error parsing JSON:", err)
+		log.Fatalf("Error parsing JSON: %s", err)
 
 	}
 	_, err = semver.NewVersion(result.(string))
 	if err != nil {
-		log.Fatalf("Version is not in Semver format", err)
+		log.Fatalf("Version is not in Semver format  %s", err)
 	}
 	return result.(string)
 
@@ -150,7 +144,7 @@ func (p *CDKPackage) getPackageNpmInfo() {
 	cmd := exec.Command("npm", "view", p.Name, "--json")
 	output, err := cmd.Output()
 	if err != nil {
-		log.Fatalf("Error executing command:", err)
+		log.Fatalf("Error executing command: %s", err)
 
 	}
 
@@ -167,13 +161,13 @@ func (p *CDKPackage) getPackageNpmInfo() {
 	view := npmView{}
 	err = json.Unmarshal(output, &view)
 	if err != nil {
-		log.Fatalf("Error parsing JSON:", err)
+		log.Fatalf("Error parsing JSON: %s", err)
 
 	}
 	// Check if valid semver
 	_, err = semver.NewVersion(view.Version)
 	if err != nil {
-		log.Fatalf("Version is not in Semver format", err)
+		log.Fatalf("Version is not in Semver format: %s", err)
 	}
 
 	p.LatestVersion = view.DistTags.Latest
@@ -191,14 +185,14 @@ func (p *CDKPackage) setNpmPackageType() {
 	}
 }
 
-func (p *CDKPackage) setOutdated()  {
+func (p *CDKPackage) setOutdated() {
 	latestVersion, err := semver.NewVersion(p.LatestVersion)
 	if err != nil {
-		log.Fatalf("Error parsing version:", err)
+		log.Fatalf("Error parsing version: %s", err)
 	}
-	localVersion, err := semver.NewVersion(p.Version)
+	localVersion, err := semver.NewVersion(p.LocalVersion)
 	if err != nil {
-		log.Fatalf("Error parsing version:", err)
+		log.Fatalf("Error parsing version: %s", err)
 	}
 	if latestVersion.GreaterThan(localVersion) {
 		p.Outdated = true
