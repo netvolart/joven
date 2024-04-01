@@ -184,16 +184,6 @@ func Test_clearFqn(t *testing.T) {
 	}
 }
 
-// func Test_getCDKConstructs(t *testing.T) {
-
-// 	getNodeCDKConstructs()
-
-// 	// if !reflect.DeepEqual(constructs, expected) {
-// 	// 	t.Errorf("Expected %v, got %v", expected, packages)
-// 	// }
-
-// }
-
 func Test_removeDuplicates(t *testing.T) {
 	type args struct {
 		packages []CDKPackage

@@ -36,54 +36,9 @@ func parsePackageJson(data []byte) []CDKPackage {
 	return packages
 }
 
-type TreeNode struct {
-	ID            string              `json:"id"`
-	Path          string              `json:"path"`
-	ConstructInfo ConstructInfo       `json:"constructInfo"`
-	Children      map[string]TreeNode `json:"children,omitempty"`
-}
 
-type Tree struct {
-	Version string   `json:"version"`
-	Tree    TreeNode `json:"tree"`
-}
 
-type ConstructInfo struct {
-	Fqn     string `json:"fqn"`
-	Version string `json:"version"`
-}
 
-type Children struct {
-	ID            string        `json:"id"`
-	Path          string        `json:"path"`
-	ConstructInfo ConstructInfo `json:"constructInfo"`
-}
-
-func getNodeCDKConstructs(data []byte) []ConstructInfo {
-	tree := Tree{}
-	err := json.Unmarshal(data, &tree)
-	if err != nil {
-		log.Fatalf("error unmarshaling tree JSON: %v", err)
-	}
-	constructs := []ConstructInfo{}
-
-	for _, value := range tree.Tree.Children {
-		children := Children{}
-		childJson, err := json.Marshal(value)
-
-		if err != nil {
-			log.Fatalf("error marshaling tree JSON: %v", err)
-		}
-		err = json.Unmarshal(childJson, &children)
-		if err != nil {
-			log.Fatalf("error unmarshaling tree JSON: %v", err)
-		}
-		constructs = append(constructs, children.ConstructInfo)
-
-	}
-	return constructs
-
-}
 
 func formNodeCDKPackages(constructs []ConstructInfo) []CDKPackage {
 	packages := []CDKPackage{}
@@ -97,13 +52,6 @@ func formNodeCDKPackages(constructs []ConstructInfo) []CDKPackage {
 
 }
 
-func clearFqn(Fqn string) string {
-	lib := strings.Split(Fqn, ".")[0]
-	if lib != "" {
-		return lib
-	}
-	return ""
-}
 
 func removeDuplicates(packages []CDKPackage) []CDKPackage {
 	keys := make(map[string]bool)
