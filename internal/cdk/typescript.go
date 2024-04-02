@@ -36,10 +36,6 @@ func parsePackageJson(data []byte) []CDKPackage {
 	return packages
 }
 
-
-
-
-
 func formNodeCDKPackages(constructs []ConstructInfo) []CDKPackage {
 	packages := []CDKPackage{}
 	for _, construct := range constructs {
@@ -52,7 +48,6 @@ func formNodeCDKPackages(constructs []ConstructInfo) []CDKPackage {
 
 }
 
-
 func removeDuplicates(packages []CDKPackage) []CDKPackage {
 	keys := make(map[string]bool)
 	list := []CDKPackage{}
@@ -64,7 +59,6 @@ func removeDuplicates(packages []CDKPackage) []CDKPackage {
 	}
 	return list
 }
-
 
 func (p *CDKPackage) getPackageNpmInfo() {
 	cmd := exec.Command("npm", "view", p.Name, "--json")

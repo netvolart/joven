@@ -22,6 +22,9 @@ func detectLanguage() (lang string, err error) {
 		return nil
 
 	})
+	if err != nil {
+		return "", err
+	}
 
 	for _, fileName := range fileNames {
 		for pattern := range patterns {
@@ -36,4 +39,3 @@ func detectLanguage() (lang string, err error) {
 	}
 	return "", nil
 }
-
