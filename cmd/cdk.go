@@ -14,10 +14,8 @@ import (
 
 var cdkCmd = &cobra.Command{
 	Use:   "cdk",
-	Short: "Prints outdated Terraform modules form a local project",
-	Long: `This command compares the versions of the Terraform modules in the 
-	local project with the latest versions available in the GitLab registry 
-	and Community terraform registry. Require to run terraform get before.`,
+	Short: "Prints outdated CDK dependencies in the project.",
+
 	Run: func(cmd *cobra.Command, args []string) {
 
 		_, err := config.Load()
