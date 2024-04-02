@@ -75,12 +75,6 @@
                                 {
                                   "Action": "sts:AssumeRoleWithWebIdentity",
                                   "Condition": {
-                                    "StringEquals": {
-                                      "gitlab.com:aud": "https://temabit.gitlab.com"
-                                    },
-                                    "StringLike": {
-                                      "gitlab.com:sub": "project_path:temabit/merchantbilling/*"
-                                    }
                                   },
                                   "Effect": "Allow",
                                   "Principal": {
