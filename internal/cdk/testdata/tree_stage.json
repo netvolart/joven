@@ -139,6 +139,13 @@
                       "ConfigDeliveryChannel": {
                         "id": "ConfigDeliveryChannel",
                         "path": "SystemInfraStageDev/SecurityRequirements/SecurityRequirements/AwsConfig/ConfigDeliveryChannel",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::Config::DeliveryChannel",
+                          "aws:cdk:cloudformation:props": {
+                            "name": "example-app-sdlc-dev-aws-config-delivery-channel",
+                            "s3BucketName": "asdafafgfddfhdfhgl"
+                          }
+                        },
                         "constructInfo": {
                           "fqn": "aws-cdk-lib.aws_config.CfnDeliveryChannel",
                           "version": "2.127.0"
@@ -358,6 +365,15 @@
                           "version": "2.127.0"
                         }
                       },
+                      "AssetBucket": {
+                        "id": "AssetBucket",
+                        "path": "SystemInfraStageDev/SecurityRequirements/AWS679f53fac002430cb0da5b7982bd2287/Code/AssetBucket",
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                          "version": "2.127.0"
+                        }
+                      }
+                    },
                     "constructInfo": {
                       "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
                       "version": "2.127.0"
@@ -369,6 +385,10 @@
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
                       "aws:cdk:cloudformation:props": {
+                        "code": {
+                          "s3Bucket": "cdk-asdasfsdf-assets-sdfsdfsff-eu-central-1",
+                          "s3Key": "ed6cd104ffdsfsdfsdf9a22055b467ea6cae10ff023023.zip"
+                        },
                         "handler": "index.handler",
                         "loggingConfig": {
                           "logGroup": {
@@ -484,7 +504,10 @@
                                   "notificationType": "ACTUAL",
                                   "threshold": 90,
                                   "thresholdType": "PERCENTAGE"
-                                }
+                                },
+                                "subscribers": [
+
+                                ]
                               }
                             ]
                           }
@@ -525,7 +548,10 @@
                                   "notificationType": "ACTUAL",
                                   "threshold": 90,
                                   "thresholdType": "PERCENTAGE"
-                                }
+                                },
+                                "subscribers": [
+
+                                ]
                               }
                             ]
                           }
@@ -566,7 +592,10 @@
                                   "notificationType": "ACTUAL",
                                   "threshold": 90,
                                   "thresholdType": "PERCENTAGE"
-                                }
+                                },
+                                "subscribers": [
+
+                                ]
                               }
                             ]
                           }
@@ -607,7 +636,10 @@
                                   "notificationType": "ACTUAL",
                                   "threshold": 90,
                                   "thresholdType": "PERCENTAGE"
-                                }
+                                },
+                                "subscribers": [
+
+                                ]
                               }
                             ]
                           }
@@ -630,6 +662,14 @@
                       "cfnCostAnomalyMonitor": {
                         "id": "cfnCostAnomalyMonitor",
                         "path": "SystemInfraStageDev/FinopsPractices/FinopsPractices/CostAnomalyDetection/cfnCostAnomalyMonitor",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::CE::AnomalyMonitor",
+                          "aws:cdk:cloudformation:props": {
+                            "monitorDimension": "SERVICE",
+                            "monitorName": "example-app-sdlc-dev-dev-monitor-anomaly-detected-is-greater-than-1",
+                            "monitorType": "DIMENSIONAL"
+                          }
+                        },
                         "constructInfo": {
                           "fqn": "aws-cdk-lib.aws_ce.CfnAnomalyMonitor",
                           "version": "2.127.0"
@@ -650,7 +690,10 @@
                                 ]
                               }
                             ],
+                            "subscribers": [
 
+                            ],
+                            "subscriptionName": "example-app-sdlc-dev-dev-subscription-anomaly-detected-is-greater-than-1",
                             "thresholdExpression": "{\"Dimensions\":{\"Key\":\"ANOMALY_TOTAL_IMPACT_PERCENTAGE\",\"MatchOptions\":[\"GREATER_THAN_OR_EQUAL\"],\"Values\":[\"1\"]}}"
                           }
                         },
