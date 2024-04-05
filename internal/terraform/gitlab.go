@@ -8,7 +8,8 @@ import (
 	"net/url"
 
 	"github.com/Masterminds/semver"
-	"github.com/netvolart/joven/config"
+	"github.com/netvolart/joven/internal/config"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 var ErrorPageNumberEmpty = errors.New("Page can't be empty")
@@ -29,7 +30,7 @@ func createModuleGitlabUrl(c *config.Config, moduleName string) (string, error) 
 
 }
 
-func getModuleVersionsFromGitLab(c *config.Config, url string) (modules []*TerraformModule, err error) {
+func getModuleVersionsFromGitLab(c *config.Config, url string) (modules []*iac.Package, err error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -58,15 +59,15 @@ func getModuleVersionsFromGitLab(c *config.Config, url string) (modules []*Terra
 
 	for _, response := range responses {
 		link := "https://gitlab.com" + response.Links.WebPath
-		module := NewTerraformModule(response.Name, "", response.Version, link, false)
+		module := iac.NewPackage(response.Name, "", response.Version, link, false)
 		modules = append(modules, module)
 	}
 
 	return modules, nil
 }
 
-func clearOldVersions(modules []*TerraformModule) ([]*TerraformModule, error) {
-	latestModules := make(map[string]*TerraformModule)
+func clearOldVersions(modules []*iac.Package) ([]*iac.Package, error) {
+	latestModules := make(map[string]*iac.Package)
 	for _, module := range modules {
 		if module == nil {
 			continue
@@ -89,7 +90,7 @@ func clearOldVersions(modules []*TerraformModule) ([]*TerraformModule, error) {
 		}
 	}
 
-	var latestModulesSlice []*TerraformModule
+	var latestModulesSlice []*iac.Package
 	for _, module := range latestModules {
 		latestModulesSlice = append(latestModulesSlice, module)
 	}

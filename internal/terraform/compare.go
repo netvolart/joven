@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
-	"github.com/netvolart/joven/config"
+	"github.com/netvolart/joven/internal/config"
+	"github.com/netvolart/joven/internal/iac"
 )
 
-func findOutdated(modules []*TerraformModule) ([]*TerraformModule, error) {
-	markedModules := []*TerraformModule{}
+func findOutdated(modules []*iac.Package) ([]*iac.Package, error) {
+	markedModules := []*iac.Package{}
 
 	for _, module := range modules {
 		latestVersion, err := semver.NewVersion(module.LatestVersion)
@@ -30,7 +31,7 @@ func findOutdated(modules []*TerraformModule) ([]*TerraformModule, error) {
 	return markedModules, nil
 }
 
-func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*TerraformModule, error) {
+func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*iac.Package, error) {
 	// parse local modules
 	localModulesResult, err := getLocalModules(localModulesData)
 	if err != nil {
@@ -38,10 +39,10 @@ func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*Terrafo
 	}
 	// set types for local modules (gitlab or community)
 	localModules := setModulesSourceType(localModulesResult)
-	var resultModules []*TerraformModule
+	var resultModules []*iac.Package
 
 	for _, localModule := range localModules.Modules {
-		var remoteModules []*TerraformModule
+		var remoteModules []*iac.Package
 		if localModule.Type == "gitlab" {
 			namesList := strings.Split(localModule.Source, "/")
 
@@ -60,7 +61,7 @@ func CompareGitLabModules(c *config.Config, localModulesData []byte) ([]*Terrafo
 			if err != nil {
 				return nil, err
 			}
-			mod := NewTerraformModule(result[0].Name, localModule.Version, result[0].LatestVersion, result[0].Link, false)
+			mod := iac.NewPackage(result[0].Name, localModule.Version, result[0].LatestVersion, result[0].Link, false)
 			resultModules = append(resultModules, mod)
 
 		} else if localModule.Type == "community" {

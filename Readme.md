@@ -59,3 +59,20 @@ To check terraform modules you have to:
 
 ![Joven TF](./assets/joven-tf.png)
 
+### CDK
+Joven can automatically detect CDK programming language in a synthesized CDK folder.
+
+Supported languages:
+
+- TypeScript
+- C# (Work in progress)
+
+#### TypeScript
+To check CDK dependencies:
+
+- Naviage to a folder that contains your CDK App.
+- Synthesize your application `cdk synth`
+- Run `joven cdk`
+- Wait for result.
+
+![Joven CDK TS](./assets/joven-cdk-node.png)

@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	"github.com/netvolart/joven/internal/iac"
 )
 
 func Test_getModuleVersionFromRegistry(t *testing.T) {
@@ -23,7 +25,7 @@ func Test_getModuleVersionFromRegistry(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
-	expected := TerraformModule{
+	expected := iac.Package{
 
 		Name:          "registry.terraform.io/terraform-aws-modules/vpc/aws",
 		LocalVersion:  "5.5.0",

@@ -7,7 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	config "github.com/netvolart/joven/config"
+	config "github.com/netvolart/joven/internal/config"
+	"github.com/netvolart/joven/internal/iac"
 )
 
 // Create a mock config
@@ -51,7 +52,7 @@ func Test_getModuleVersionsFromGitLab(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
-	expected := []*TerraformModule{
+	expected := []*iac.Package{
 		{
 			Name:          "ecs-module/aws",
 			LocalVersion:  "",
@@ -113,13 +114,13 @@ func createMockServer(t *testing.T) *httptest.Server {
 func Test_clearOldVersions(t *testing.T) {
 	tests := []struct {
 		name    string
-		modules []*TerraformModule
-		want    []*TerraformModule
+		modules []*iac.Package
+		want    []*iac.Package
 		wantErr bool
 	}{
 		{
 			name: "Normal test",
-			modules: []*TerraformModule{
+			modules: []*iac.Package{
 				{
 					Name:          "ecs-application/aws",
 					LatestVersion: "0.0.1",
@@ -137,7 +138,7 @@ func Test_clearOldVersions(t *testing.T) {
 					LatestVersion: "1.0.1",
 				},
 			},
-			want: []*TerraformModule{
+			want: []*iac.Package{
 				{
 					Name:          "ecs-application/aws",
 					LatestVersion: "0.0.1",

@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/netvolart/joven/internal/iac"
 )
 
-func getModuleVersionsFromRegistry(url string, localModule LocalModule) (module TerraformModule, Error error) {
+func getModuleVersionsFromRegistry(url string, localModule LocalModule) (module iac.Package, Error error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return module, err

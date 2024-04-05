@@ -3,10 +3,12 @@ package terraform
 import (
 	"reflect"
 	"testing"
+
+	"github.com/netvolart/joven/internal/iac"
 )
 
 func Test_findOutdated(t *testing.T) {
-	input := []*TerraformModule{
+	input := []*iac.Package{
 		{
 			Name:          "ecs-application/aws",
 			LocalVersion:  "0.0.2",
@@ -20,7 +22,7 @@ func Test_findOutdated(t *testing.T) {
 			Outdated:      false,
 		},
 	}
-	expectedResult := []*TerraformModule{
+	expectedResult := []*iac.Package{
 		{
 			Name:          "ecs-application/aws",
 			LocalVersion:  "0.0.2",
